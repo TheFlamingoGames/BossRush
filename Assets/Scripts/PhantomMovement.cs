@@ -16,7 +16,14 @@ public class PhantomMovement : MonoBehaviour
     [SerializeField] float turnSmoothTime = 0.1f;
     float turnSmoothVelocity;
 
-    
+    //Dash
+    [SerializeField] float dashSpeed = 10f;
+    [SerializeField] float dashTime = 0.5f;
+    [SerializeField] float dashDuration = 1f;
+    float dashDelta;
+    float dashDurationDelta;
+    public bool dash => dashDelta > 0;
+
     //Gravity
     GroundCheck gravity;
     Vector3 velocity;
@@ -31,22 +38,44 @@ public class PhantomMovement : MonoBehaviour
         controller = gameObject.GetComponent<CharacterController>();
         gravity = gameObject.GetComponent<GroundCheck>();
     }
-
-    void FixedUpdate()
+    private void Update()
     {
         GetInput();
+    }
+    void FixedUpdate()
+    {
         Gravity();
         Move();
         playerBody.Move();
     }
     void GetInput()
     {
+        //direction.x = Mathf.Abs(Input.GetAxisRaw("D Pad Horizontal")) > 0 ? Input.GetAxisRaw("D Pad Horizontal") : Input.GetAxisRaw("Horizontal");
+        //direction.z = Mathf.Abs(Input.GetAxisRaw("D Pad Vertical")) > 0 ? Input.GetAxisRaw("D Pad Vertical") : Input.GetAxisRaw("Vertical");
         direction.x = Input.GetAxisRaw("Horizontal");
         direction.z = Input.GetAxisRaw("Vertical");
-        direction = direction.normalized; 
+
+
+        if (dashDurationDelta <= 0)
+        {
+            if (Input.GetButtonDown("Jump"))
+            {
+                dashDelta = dashTime;
+                dashDurationDelta = dashDuration;
+            }
+        }
+        else 
+        {
+            dashDelta -= Time.deltaTime;
+            dashDurationDelta -= Time.deltaTime;
+        }
     }
+
+    #region Movement
     private void Gravity() 
     {
+        if (dash) return;
+
         if (gravity.IsGrounded() && velocity.y < 0) 
         {
             velocity.y = -2f;
@@ -57,17 +86,44 @@ public class PhantomMovement : MonoBehaviour
 
     private void Move()
     {
-        if (direction.magnitude <= 0) return;
+        if (dash)
+        {
+            MoveDash();
 
+        }
+        else 
+        {
+            MoveRun();
+        }
+    }
+
+    private void MoveRun() 
+    {
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.transform.eulerAngles.y;
         float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-        transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
+        if (direction.magnitude > 0) transform.rotation = Quaternion.Euler(0f, angle, 0f);
         Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-        controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
+        controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime * direction.magnitude);
     }
-    public float GetSpeed()
+
+    private void MoveDash()
+    {
+        controller.Move(transform.forward * dashSpeed * Time.deltaTime);
+    }
+    #endregion
+
+    #region getters
+    public float GetMoveSpeed()
     {
         return moveSpeed;
     }
+    public float GetDashSpeed()
+    {
+        return dashSpeed;
+    }
+    public bool GetDash()
+    {
+        return dash;
+    }
+    #endregion
 }
