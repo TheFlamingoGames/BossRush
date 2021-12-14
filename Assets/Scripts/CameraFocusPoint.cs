@@ -12,6 +12,22 @@ public class CameraFocusPoint : MonoBehaviour
     [SerializeField] float radius = 50f;
     Vector3 direction;
 
+    CharacterInput characterInput;
+    Vector2 input;
+    void Awake()
+    {
+        characterInput = new CharacterInput();
+        characterInput.CameraMovement.LookAround.performed += ctx => input = ctx.ReadValue<Vector2>();
+        characterInput.CameraMovement.LookAround.canceled += ctx => input = Vector2.zero;
+    }
+    void OnEnable()
+    {
+        characterInput.CameraMovement.Enable();
+    }
+    void OnDisable()
+    {
+        characterInput.CameraMovement.Disable();
+    }
     private void Start()
     {
     }
@@ -34,10 +50,6 @@ public class CameraFocusPoint : MonoBehaviour
 
     void GetInput() 
     {
-        Vector2 input = new Vector2(
-            Input.GetAxisRaw("R Joystick Horizontal"),
-            Input.GetAxisRaw("R Joystick Vertical") * -1);
-
         direction = new Vector3(input.x + input.y,0,-input.x + input.y);
     }
 }

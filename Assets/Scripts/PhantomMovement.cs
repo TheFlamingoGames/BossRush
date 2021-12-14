@@ -1,15 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PhantomMovement : MonoBehaviour
 {
     //Generic
     Camera mainCamera;
     CharacterController controller;
+    CharacterInput characterInput;
 
     //Input
+    Vector2 input;
     Vector3 direction;
+
 
     //Movement
     [SerializeField] float moveSpeed = 10f;
@@ -32,6 +36,26 @@ public class PhantomMovement : MonoBehaviour
     //PlayerBody
     [SerializeField] PlayerBody playerBody;
 
+    void Awake()
+    {
+        characterInput = new CharacterInput();
+        //Dash
+        characterInput.PlayerMovement.Dash.performed += ctx => Dash();
+
+        //Controller Movement
+        characterInput.PlayerMovement.Move.performed += ctx => input = ctx.ReadValue<Vector2>();
+        characterInput.PlayerMovement.Move.canceled += ctx => input = Vector2.zero;
+    }
+    
+    void OnEnable()
+    {
+        characterInput.PlayerMovement.Enable();
+    }
+    void OnDisable()
+    {
+        characterInput.PlayerMovement.Disable();
+    }
+
     void Start()
     {
         mainCamera = Camera.main;
@@ -40,7 +64,9 @@ public class PhantomMovement : MonoBehaviour
     }
     private void Update()
     {
-        GetInput();
+        direction = new Vector3(input.x, 0, input.y);
+        dashDelta -= Time.deltaTime;
+        dashDurationDelta -= Time.deltaTime;
     }
     void FixedUpdate()
     {
@@ -48,27 +74,12 @@ public class PhantomMovement : MonoBehaviour
         Move();
         playerBody.Move();
     }
-    void GetInput()
+
+    void Dash()
     {
-        //direction.x = Mathf.Abs(Input.GetAxisRaw("D Pad Horizontal")) > 0 ? Input.GetAxisRaw("D Pad Horizontal") : Input.GetAxisRaw("Horizontal");
-        //direction.z = Mathf.Abs(Input.GetAxisRaw("D Pad Vertical")) > 0 ? Input.GetAxisRaw("D Pad Vertical") : Input.GetAxisRaw("Vertical");
-        direction.x = Input.GetAxisRaw("Horizontal");
-        direction.z = Input.GetAxisRaw("Vertical");
-
-
-        if (dashDurationDelta <= 0)
-        {
-            if (Input.GetButtonDown("Jump"))
-            {
-                dashDelta = dashTime;
-                dashDurationDelta = dashDuration;
-            }
-        }
-        else 
-        {
-            dashDelta -= Time.deltaTime;
-            dashDurationDelta -= Time.deltaTime;
-        }
+        if (dashDurationDelta > 0) return;
+        dashDelta = dashTime;
+        dashDurationDelta = dashDuration;
     }
 
     #region Movement
