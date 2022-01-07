@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class CameraFocusPoint : MonoBehaviour
 {
@@ -9,27 +10,31 @@ public class CameraFocusPoint : MonoBehaviour
 
     [Space]
     [Header("Looking around")]
+    [SerializeField] Vector3 offset = Vector3.zero;
     [SerializeField] float radius = 50f;
     Vector3 direction;
 
-    CharacterInput characterInput;
-    Vector2 input;
+    
+
+    Vector2 rInput => InputManager.instance.GetRStickInput();
+    Vector2 mInput => InputManager.instance.GetMousePos();
+    float screenRatio => (float)Screen.height / (float)Screen.width;
+
+    bool isMouseControlEnabled;
+
+    new Camera camera;
+
+
     void Awake()
     {
-        characterInput = new CharacterInput();
-        characterInput.CameraMovement.LookAround.performed += ctx => input = ctx.ReadValue<Vector2>();
-        characterInput.CameraMovement.LookAround.canceled += ctx => input = Vector2.zero;
+        camera = Camera.main;
+        Debug.Log("ScreenSize: " + Screen.width + " " + Screen.height);
     }
-    void OnEnable()
+
+    private void  Start()
     {
-        characterInput.CameraMovement.Enable();
-    }
-    void OnDisable()
-    {
-        characterInput.CameraMovement.Disable();
-    }
-    private void Start()
-    {
+        InputManager.instance.OnEnableCameraPressed += PrintPressed;
+        InputManager.instance.OnEnableCameraReleased += PrintReleased;
     }
 
     private void Update()
@@ -41,15 +46,39 @@ public class CameraFocusPoint : MonoBehaviour
     {
         Vector3 lookAt = Vector3.zero;
 
-        lookAt = player.transform.position;
+        lookAt = new Vector3(player.transform.position.x + offset.x, player.transform.position.y + offset.y , player.transform.position.z + offset.z);
         lookAt.x += direction.normalized.x * radius;
         lookAt.z += direction.normalized.z * radius;
 
         transform.position = Vector3.Lerp(transform.position, lookAt, time);
     }
 
+    Vector2 NewMPos()
+    {
+        //Move the mouse origo into the middle of the screen, then make the values into a circle
+        Vector2 newMPos = camera.ScreenToViewportPoint(mInput);
+        newMPos = (newMPos/0.5f)-Vector2.one;
+        newMPos.x /= screenRatio;
+        return newMPos.normalized;   
+    }
+
     void GetInput() 
     {
+        Vector2 input = Vector2.zero;
+
+        if(isMouseControlEnabled) input = NewMPos();
+        else input = rInput;
+
         direction = new Vector3(input.x + input.y,0,-input.x + input.y);
+    }
+
+    void PrintPressed(object sender, EventArgs e)
+    {
+        isMouseControlEnabled = true;
+    }
+
+    void PrintReleased(object sender, EventArgs e)
+    {
+        isMouseControlEnabled = false;
     }
 }

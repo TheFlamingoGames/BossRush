@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,12 +9,10 @@ public class PhantomMovement : MonoBehaviour
     //Generic
     Camera mainCamera;
     CharacterController controller;
-    CharacterInput characterInput;
 
     //Input
-    Vector2 input;
+    Vector2 input => InputManager.instance.GetLStickInput();
     Vector3 direction;
-
 
     //Movement
     [SerializeField] float moveSpeed = 10f;
@@ -26,7 +25,7 @@ public class PhantomMovement : MonoBehaviour
     [SerializeField] float dashDuration = 1f;
     float dashDelta;
     float dashDurationDelta;
-    public bool dash => dashDelta > 0;
+    bool dash => dashDelta > 0;
 
     //Gravity
     GroundCheck gravity;
@@ -36,24 +35,17 @@ public class PhantomMovement : MonoBehaviour
     //PlayerBody
     [SerializeField] PlayerBody playerBody;
 
+
     void Awake()
     {
-        characterInput = new CharacterInput();
-        //Dash
-        characterInput.PlayerMovement.Dash.performed += ctx => Dash();
+        InputManager.instance.OnDashPressed += OnDash;
+    }
 
-        //Controller Movement
-        characterInput.PlayerMovement.Move.performed += ctx => input = ctx.ReadValue<Vector2>();
-        characterInput.PlayerMovement.Move.canceled += ctx => input = Vector2.zero;
-    }
-    
-    void OnEnable()
+    void OnDash(object sender, EventArgs e)
     {
-        characterInput.PlayerMovement.Enable();
-    }
-    void OnDisable()
-    {
-        characterInput.PlayerMovement.Disable();
+        if (dashDurationDelta > 0) return;
+        dashDelta = dashTime;
+        dashDurationDelta = dashDuration;
     }
 
     void Start()
@@ -75,13 +67,6 @@ public class PhantomMovement : MonoBehaviour
         playerBody.Move();
     }
 
-    void Dash()
-    {
-        if (dashDurationDelta > 0) return;
-        dashDelta = dashTime;
-        dashDurationDelta = dashDuration;
-    }
-
     #region Movement
     private void Gravity() 
     {
@@ -100,7 +85,6 @@ public class PhantomMovement : MonoBehaviour
         if (dash)
         {
             MoveDash();
-
         }
         else 
         {
