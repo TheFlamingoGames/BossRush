@@ -9,23 +9,43 @@ public class InputManager : MonoBehaviour
     PlayerInput playerInput;
 
     //Player Movement
+
     public event EventHandler OnDashPressed;
+    public event EventHandler OnDashReleased;
+
     public event EventHandler OnAttackPressed;
+    public event EventHandler OnAttackReleased;
+
     public event EventHandler OnParryPressed;
+    public event EventHandler OnParryReleased;
+
     public event EventHandler OnInteractPressed;
+    public event EventHandler OnInteractReleased;
+
     public event EventHandler OnArrowPressed;
+    public event EventHandler OnArrowReleased;
+
     Vector2 lStickInput;
 
     //Technical Inputs
+
     public event EventHandler OnPausePressed;
+    public event EventHandler OnPauseReleased;
+
     public event EventHandler OnEnableCameraPressed;
     public event EventHandler OnEnableCameraReleased;
+
     Vector2 rStickInput;
     Vector2 mousePos;
 
     //Menu Handling
+
     public event EventHandler OnOkayPressed;
+    public event EventHandler OnOkayReleased;
+
     public event EventHandler OnBackPressed;
+    public event EventHandler OnBackReleased;
+
     Vector2 menuInput;
 
     public void Awake()
@@ -53,32 +73,51 @@ public class InputManager : MonoBehaviour
     {
         playerInput = new PlayerInput();
 
-        //Player Movement
+    //Player Movement
+    
         playerInput.PlayerMovement.Move.performed += ctx => lStickInput = ctx.ReadValue<Vector2>();
         playerInput.PlayerMovement.Move.canceled += ctx => lStickInput = Vector2.zero;
 
         playerInput.PlayerMovement.Dash.performed += ctx => OnDashPressed?.Invoke(this, EventArgs.Empty);
-        playerInput.PlayerMovement.Attack.performed += ctx => OnAttackPressed?.Invoke(this, EventArgs.Empty);
-        playerInput.PlayerMovement.Parry.performed += ctx => OnParryPressed?.Invoke(this, EventArgs.Empty);
-        playerInput.PlayerMovement.Interact.performed += ctx => OnInteractPressed?.Invoke(this, EventArgs.Empty);
-        playerInput.PlayerMovement.Arrow.performed += ctx => OnArrowPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.PlayerMovement.Dash.canceled += ctx => OnDashReleased?.Invoke(this, EventArgs.Empty);
 
-        //Camera Movement
+        playerInput.PlayerMovement.Attack.performed += ctx => OnAttackPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.PlayerMovement.Attack.canceled += ctx => OnAttackReleased?.Invoke(this, EventArgs.Empty);
+
+        playerInput.PlayerMovement.Parry.performed += ctx => OnParryPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.PlayerMovement.Parry.canceled += ctx => OnParryReleased?.Invoke(this, EventArgs.Empty);
+
+        playerInput.PlayerMovement.Interact.performed += ctx => OnInteractPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.PlayerMovement.Interact.canceled += ctx => OnInteractReleased?.Invoke(this, EventArgs.Empty);
+
+        playerInput.PlayerMovement.Arrow.performed += ctx => OnArrowPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.PlayerMovement.Arrow.canceled += ctx => OnArrowReleased?.Invoke(this, EventArgs.Empty);
+
+    //Camera Movement
+
         playerInput.TechnicalInputs.CameraMovement.performed += ctx => rStickInput = ctx.ReadValue<Vector2>();
         playerInput.TechnicalInputs.CameraMovement.canceled += ctx => rStickInput = Vector2.zero;
+
         playerInput.TechnicalInputs.MouseCameraMovement.performed += ctx => mousePos = ctx.ReadValue<Vector2>();
         playerInput.TechnicalInputs.MouseCameraMovement.canceled += ctx => mousePos = Vector2.zero;
 
         playerInput.TechnicalInputs.Pause.performed += ctx => OnPausePressed?.Invoke(this, EventArgs.Empty);
+        playerInput.TechnicalInputs.Pause.canceled += ctx => OnPauseReleased?.Invoke(this, EventArgs.Empty);
+
         playerInput.TechnicalInputs.EnableCamera.performed += ctx => OnEnableCameraPressed?.Invoke(this, EventArgs.Empty);
         playerInput.TechnicalInputs.EnableCamera.canceled += ctx => OnEnableCameraReleased?.Invoke(this, EventArgs.Empty);
 
-        //Menu Inputs
+    //Menu Inputs
+
         playerInput.MenuHandling.Move.performed += ctx => menuInput = ctx.ReadValue<Vector2>();
         playerInput.MenuHandling.Move.canceled += ctx => menuInput = Vector2.zero;
 
         playerInput.MenuHandling.Okay.performed += ctx => OnOkayPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.MenuHandling.Okay.canceled += ctx => OnOkayReleased?.Invoke(this, EventArgs.Empty);
+
         playerInput.MenuHandling.Back.performed += ctx => OnBackPressed?.Invoke(this, EventArgs.Empty);
+        playerInput.MenuHandling.Back.canceled += ctx => OnBackReleased?.Invoke(this, EventArgs.Empty);
+
     }
 
     public void ChangeInputListeners(object sender, GameManager.OnGameStateChangeArgs e)
@@ -121,7 +160,6 @@ public class InputManager : MonoBehaviour
                 playerInput.MenuHandling.Disable();
                 break;
         }        
-        Debug.Log(e.gs);
     }
 
     public Vector2 GetLStickInput()

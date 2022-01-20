@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
         DEATH,
         MENU
     }
-    public GameState gameState = GameState.NULL;
+    GameState gameState = GameState.NULL;
 
     public static GameManager instance;
 
@@ -67,5 +67,9 @@ public class GameManager : MonoBehaviour
         }
         instance = this;
         DontDestroyOnLoad(this.gameObject);
+    }
+    public GameState GetGameState()
+    {
+        return gameState;
     }
 }

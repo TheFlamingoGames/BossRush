@@ -28,7 +28,6 @@ public class CameraFocusPoint : MonoBehaviour
     void Awake()
     {
         camera = Camera.main;
-        Debug.Log("ScreenSize: " + Screen.width + " " + Screen.height);
     }
 
     private void  Start()
