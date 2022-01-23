@@ -5,7 +5,7 @@ using System;
 
 public class PhantomSystem : StateMachine
 {
-    public static PhantomState phantomState = PhantomState.NULL;
+    public static  PhantomState phantomState = PhantomState.NULL;
     public enum PhantomState
     {
         NULL,
@@ -14,6 +14,11 @@ public class PhantomSystem : StateMachine
         DISABLED,
         ARROW,
         DASH
+    }
+
+    public static PhantomState GetPhantomState()
+    {
+        return phantomState;
     }
 
     public static event EventHandler<OnStateStartArgs> OnStateStart;
@@ -42,20 +47,20 @@ public class PhantomSystem : StateMachine
 
     void Start()
     {
-        SetState(new PhantomStateBegin(this));
+        State s = new PhantomStateBegin(this);
+        SetState(s);
     }
 
     public override void OnStart()
     {
-        if(state == null) return;
-
-        StartCoroutine(state?.Start());
+        if(state?.GetType() == null) return;
+        StartCoroutine(state.Start());
         OnStateStart?.Invoke(this, new OnStateStartArgs{ state = state });
     }
 
     public override void OnAction()
     {
-        if(state == null) return;
+        if(state?.GetType() == null) return;
 
         StartCoroutine(state?.Action());
         OnStateAction?.Invoke(this, new OnStateActionArgs{ state = state });
@@ -63,7 +68,7 @@ public class PhantomSystem : StateMachine
 
     public override void OnPause()
     {
-        if(state == null) return;
+        if(state?.GetType() == null) return;
 
         StartCoroutine(state?.Pause());
         OnStatePause?.Invoke(this, new OnStatePauseArgs{ state = state });
@@ -71,8 +76,7 @@ public class PhantomSystem : StateMachine
     
     public override void OnEnd()
     {
-        if(state == null) return;
-
+        if(state?.GetType() == null) return;
         StartCoroutine(state.End());
         OnStateEnd?.Invoke(this, new OnStateEndArgs{ state = state });
     }

@@ -5,7 +5,7 @@ using System;
 
 public abstract class State : MonoBehaviour
 {
-    protected StateMachine statemachine;
+    public StateMachine statemachine;
 
     public State(StateMachine newStateMachine)
     {

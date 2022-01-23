@@ -34,11 +34,9 @@ public class CharacterAnimator : MonoBehaviour
 
     void Appear(object sender, PhantomSystem.OnStateStartArgs e)
     {
-        Debug.Log(gameObject.name + " has appeared " + e.state.GetType());
     }
 
     void Disappear(object sender, PhantomSystem.OnStateEndArgs e)
     {
-        Debug.Log(gameObject.name + " has disappeared " + e.state.GetType());
     }
 }
