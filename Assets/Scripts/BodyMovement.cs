@@ -45,12 +45,11 @@ public class BodyMovement : MonoBehaviour
     [SerializeField] Transform followPoint;
     [SerializeField] float distance=1f;
 
-    PhantomSystem.PhantomState phantomState => PhantomSystem.GetPhantomState();
+    //Arrow
+    bool aiming;
 
-    void OnDashReleased(object sender, EventArgs e)
-    {
-        dash = false;
-    }
+    //State
+    PhantomSystem.PhantomState phantomState => PhantomSystem.GetPhantomState();
 
     void OnDash(object sender, EventArgs e)
     {
@@ -62,28 +61,42 @@ public class BodyMovement : MonoBehaviour
         }
         else
         {
-            DashRoll(); 
+            DashRoll();
         }
     }
+
     void DashTeleport()
     {
         phantomSystem.SetState(new PhantomStateDash(phantomSystem));
+        dashDurationDelta = dashDuration;
         dash = true;
     }
+
     void DashRoll()
     {
         dashDelta = dashTime;
-        dashDurationDelta = dashDuration;
+        dashDurationDelta = dashDuration;        
     }
-
     void Start()
     {
         InputManager.instance.OnDashPressed += OnDash;
-        InputManager.instance.OnDashReleased += OnDashReleased;
+        InputManager.instance.OnArrowPressed += OnArrowPressed;
+        InputManager.instance.OnArrowReleased += OnArrowReleased;
 
         mainCamera = Camera.main;
         controller = gameObject.GetComponent<CharacterController>();
         groundCheck = gameObject.GetComponent<GroundCheck>();
+    }
+
+    void OnArrowPressed(object sender, EventArgs e)
+    {
+        if(phantomState != PhantomSystem.PhantomState.AVAILABLE) return;
+        aiming=true;
+    }
+    void OnArrowReleased(object sender, EventArgs e)
+    {
+        if(phantomState != PhantomSystem.PhantomState.ARROW) return;
+        aiming=false;
     }
 
     private void Update()
@@ -92,6 +105,7 @@ public class BodyMovement : MonoBehaviour
         dashDelta -= Time.deltaTime;
         dashDurationDelta -= Time.deltaTime;
     }
+
     void FixedUpdate()
     {
         Gravity();
@@ -126,17 +140,19 @@ public class BodyMovement : MonoBehaviour
 
     private void MoveRun() 
     {
+
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + mainCamera.transform.eulerAngles.y;
         float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
         if (direction.magnitude > 0) transform.rotation = Quaternion.Euler(0f, angle, 0f);
-        Vector3 moveDir = !dash? Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward : Vector3.zero;
 
-        
+        if(aiming) return;
+        Vector3 moveDir = !dash? Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward : Vector3.zero;
         controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime * direction.magnitude);
     }
 
     private void MoveDash()
     {
+        if(aiming) return;
         controller.Move(transform.forward * dashSpeed * Time.deltaTime);
     }
     #endregion
@@ -152,4 +168,15 @@ public class BodyMovement : MonoBehaviour
     {
         transform.position = newPos;
     }
+
+    public bool GetDash()
+    {
+        return dash;
+    }
+    public void SetDash(bool newDash)
+    {
+        dash = newDash;
+    }
+
+    
 }

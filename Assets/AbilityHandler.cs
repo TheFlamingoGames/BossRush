@@ -9,6 +9,8 @@ public class AbilityHandler : MonoBehaviour
     [SerializeField] GameObject arrow;
     [SerializeField] GameObject dashOrb;
 
+    [SerializeField] DashOrb dashOrbScript;
+
     [SerializeField] GameObject player;
     [SerializeField] BodyMovement playerMovement;
     int count;
@@ -19,6 +21,7 @@ public class AbilityHandler : MonoBehaviour
     void Awake()
     {
         playerMovement = player.GetComponent<BodyMovement>();
+        dashOrbScript = dashOrb.GetComponent<DashOrb>();
     }
 
     void Start()
@@ -35,6 +38,7 @@ public class AbilityHandler : MonoBehaviour
     void ToggleToPhantom(object sender, PhantomSystem.OnStateStartArgs e)
     {
         if(phantomState != PhantomSystem.PhantomState.AVAILABLE) return;
+        playerMovement.SetDash(false);
         arrow.SetActive(false);
         dashOrb.SetActive(false);
 
@@ -58,7 +62,6 @@ public class AbilityHandler : MonoBehaviour
         arrow.transform.rotation = player.transform.rotation;
         arrow.SetActive(true);
 
-
         phantomSystem.SetState(new PhantomStateArrow(phantomSystem));
     }
     void ToggleFromArrow(object sender, EventArgs e)
@@ -70,9 +73,9 @@ public class AbilityHandler : MonoBehaviour
 //DashOrb
     void ToggleToDashOrb(object sender, EventArgs e)
     {
-        if(playerMovement.GetDashDuration()>0) return;
+        //if(playerMovement.GetDashDuration()>0) return;
+        if(phantomState != PhantomSystem.PhantomState.DASH) return;
 
-        if(phantomState != PhantomSystem.PhantomState.AVAILABLE) return;
         phantom.SetActive(false);
         arrow.SetActive(false);
 
@@ -80,10 +83,15 @@ public class AbilityHandler : MonoBehaviour
         dashOrb.transform.rotation = player.transform.rotation;
         dashOrb.SetActive(true);
     }
+
     void ToggleFromDashOrb(object sender, EventArgs e)
     {
+        if(!playerMovement.GetDash()) return;
         if(phantomState != PhantomSystem.PhantomState.DASH) return;
+
+        dashOrbScript.MovePos();
         playerMovement.SetPos(dashOrb.transform.position);
+
         phantomSystem.SetState(new PhantomStateAvailable(phantomSystem));
     }
 }

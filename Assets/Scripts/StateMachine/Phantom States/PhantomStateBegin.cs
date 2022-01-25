@@ -15,7 +15,7 @@ public class PhantomStateBegin : State
         Debug.Log("Phantom Begin State Starts");
 
         //Wait for 2 seconds
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0f);
 
         //Start Other State
         statemachine.SetState(new PhantomStateAvailable(statemachine));

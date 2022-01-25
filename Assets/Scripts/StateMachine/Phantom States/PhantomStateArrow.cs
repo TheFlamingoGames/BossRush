@@ -19,11 +19,7 @@ public class PhantomStateArrow : State
     {
         Debug.Log("Phantom Arrow State Starts");
 
-        //Wait for 2 seconds
-        yield return new WaitForSeconds(2f);
-
-        //Start Other State
-        statemachine.SetState(new PhantomStateAvailable(statemachine));
+        yield break;
     }
 
     public override IEnumerator Action()
